@@ -1,0 +1,20 @@
+grpc:
+  host: localhost
+  port: 9090
+
+sql:
+  host: localhost
+  port: 5432
+  database: example-db
+  user: example-user
+  password: example-user
+
+logging:
+  class: io.vertx.core.logging.SLF4JLogDelegateFactory
+
+datadog:
+  host: localhost
+
+application:
+  version: unknown
+  name: example-app

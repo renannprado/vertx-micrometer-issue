@@ -1,0 +1,30 @@
+version: '3'
+
+services:
+  client-service-postgres:
+    container_name: client-service-postgres.localhost
+    image: postgres:9.6.9-alpine
+    ports:
+      - 127.0.0.1:5432:5432
+    environment:
+      POSTGRES_USER: client-service
+      POSTGRES_PASSWORD: client-service
+      POSTGRES_DB: client_data_management
+  event-hub-migration:
+    depends_on:
+      - client-service-postgres
+    image: eu.gcr.io/gcp-brokerage-dev/flyway
+    # TBH not sure why this is necessary, but if this is not here, the command won't work
+    entrypoint: ""
+    volumes:
+      - "./migrations/conf/:/flyway/conf"
+      - "./migrations/schema/:/flyway/sql"
+    command: >
+      /bin/bash -c "
+        while ! nc -z client-service-postgres.localhost 5432;
+        do
+          echo 'waiting for database to be up';
+          sleep 1;
+        done;
+        flyway migrate -url='jdbc:postgresql://client-service-postgres.localhost:5432/client_data_management?useUnicode=true&characterEncoding=utf8' -user=client-service -password=client-service
+      "
