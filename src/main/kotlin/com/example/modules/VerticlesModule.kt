@@ -1,16 +1,15 @@
 package com.example.modules
 
-import com.example.DummyRepository
+import com.example.GrpcAPIVerticle
 import com.example.MainHttpServer
-import dagger.Module
-import dagger.Provides
-import javax.inject.Singleton
+import io.vertx.grpc.VertxServerBuilder
 
-@Module
 object VerticlesModule {
-    @Provides
-    @Singleton
-    fun mainHttpServerProvider(dummyRepository: DummyRepository): MainHttpServer {
+    fun mainHttpServerProvider(dummyRepository: MyRepsoitory): MainHttpServer {
         return MainHttpServer(dummyRepository)
+    }
+
+    fun grpcServerVerticle(serverBuilder: VertxServerBuilder, dummyRepository: MyRepsoitory): GrpcAPIVerticle {
+        return GrpcAPIVerticle(serverBuilder, dummyRepository)
     }
 }

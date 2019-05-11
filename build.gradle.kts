@@ -3,14 +3,12 @@ buildscript {
         set("kotlinVersion", "1.3.21")
         set("vertxVersion", "3.7.0")
         set("junitJupiterEngineVersion", "5.4.0")
-        set("daggerVersion", "2.22.1")
     }
 }
 
 plugins {
     // Apply the Kotlin JVM plugin to add support for Kotlin on the JVM.
     kotlin("jvm").version("${extra["kotlinVersion"]}")
-    kotlin("kapt").version("${extra["kotlinVersion"]}")
     id("com.github.johnrengelman.shadow").version("5.0.0")
     // Apply the application plugin to add support for building a CLI application.
     application
@@ -42,11 +40,6 @@ dependencies {
     implementation("io.vertx:vertx-lang-kotlin-coroutines:${extra["vertxVersion"]}")
 
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.2.1")
-
-    implementation("com.google.dagger:dagger:${extra["daggerVersion"]}")
-    // Annotation process configuration to generate additional Dagger code
-    kapt("com.google.dagger:dagger-compiler:${extra["daggerVersion"]}")
-    kaptTest("com.google.dagger:dagger-compiler:${extra["daggerVersion"]}")
 
     // for configuration
     implementation("io.vertx:vertx-config:${extra["vertxVersion"]}")

@@ -1,10 +1,11 @@
 package com.example
 
+import com.example.modules.MyRepsoitory
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.Future
 import io.vertx.core.http.HttpServer
 
-class MainHttpServer(private val dummyRepository: DummyRepository) : AbstractVerticle() {
+class MainHttpServer(private val dummyRepository: MyRepsoitory) : AbstractVerticle() {
 
     lateinit var httpServer: HttpServer
 

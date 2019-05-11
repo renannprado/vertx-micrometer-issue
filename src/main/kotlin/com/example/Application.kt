@@ -1,56 +1,31 @@
 package com.example
 
 import com.example.modules.*
-import dagger.Component
 import io.micrometer.statsd.StatsdMeterRegistry
 import io.vertx.core.Vertx
-import io.vertx.core.json.JsonObject
 import io.vertx.kotlin.core.closeAwait
 import io.vertx.kotlin.core.deployVerticleAwait
-import javax.inject.Inject
-import javax.inject.Singleton
 
 suspend fun main() {
-    var applicationComponent: ApplicationComponent? = null
-    try {
-        applicationComponent = DaggerApplicationComponent.builder()
-                .metricsModule(MetricsModule)
-                .databaseModule(DatabaseModule)
-                .systemModule(SystemModule)
-                .verticlesModule(VerticlesModule)
-                .vertxModule(VertxModule)
-                .build()
 
-        applicationComponent.application().start()
+    var vertx: Vertx? = null
+    var meterRegistry: StatsdMeterRegistry? = null
+
+    try {
+        val datadogConfig = MetricsModule.datadogConfig()
+        meterRegistry = MetricsModule.metricsRegistry(datadogConfig)
+        val vertxOptions = VertxModule.vertxOptions(meterRegistry)
+        vertx = VertxModule.provideVertx(vertxOptions)
+        val config = SystemModule.provideConfiguration(vertx)
+        val pgOptions = DatabaseModule.providePgPoolOptions(config)
+        val pgConnection = DatabaseModule.providePgConnectionPool(vertx, pgOptions)
+        val dummyRepository = DatabaseModule.provideMyRepsoitory(pgConnection)
+        val grpcServerBuilder = GrpcModule.provideServerBuilder(vertx, config)
+        val grpcAPIVerticle = VerticlesModule.grpcServerVerticle(grpcServerBuilder, dummyRepository)
+        vertx.deployVerticleAwait(grpcAPIVerticle)
     } catch (e: Exception) {
         e.printStackTrace()
-
-        applicationComponent?.statsdMeterRegistry()?.close()
-
-        applicationComponent?.vertx()?.closeAwait()
+        meterRegistry!!.close()
+        vertx!!.closeAwait()
     }
-}
-
-class Application @Inject constructor(private val vertx: Vertx, private val mainHttpServer: MainHttpServer) {
-    suspend fun start() {
-        vertx.deployVerticleAwait(mainHttpServer)
-    }
-}
-
-@Singleton
-@Component(
-        modules = [
-            VertxModule::class,
-            SystemModule::class,
-            GrpcModule::class,
-            DatabaseModule::class,
-            MetricsModule::class,
-            VerticlesModule::class
-        ]
-)
-interface ApplicationComponent {
-    fun vertx(): Vertx
-    fun statsdMeterRegistry(): StatsdMeterRegistry
-    fun application(): Application
-    fun config(): JsonObject
 }
