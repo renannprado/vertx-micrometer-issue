@@ -1,5 +1,9 @@
 # Vertx + Metrics bug reproducer
 
+This was related to issue: https://github.com/eclipse-vertx/vert.x/issues/2943
+
+But turns out I made a mistake. :)
+
 This bug was found while using Java11:
 
 ```
